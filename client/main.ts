@@ -18,7 +18,7 @@ import {
     // Check if the program has been deployed
     await checkProgram();
  
-    // Say hello to an account
+    // Say hello to an account n times
     await sayGm();
  
     // Find out how many times that account has been greeted

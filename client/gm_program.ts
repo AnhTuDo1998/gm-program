@@ -54,6 +54,8 @@ import {
  const PROGRAM_KEYPAIR_PATH = path.join(PROGRAM_PATH, 'gm_program-keypair.json');
  
  const NAME_FOR_GM='Glass Chewer'
+ const INIT_COUNT= 0
+ const TIMES_TO_GREET=3
  
  /**
  * Borsh class and schema definition for greeting accounts
@@ -61,16 +63,19 @@ import {
  
  class GmAccount {
     name = "";
-    constructor(fields: {name: string} | undefined = undefined) {
+    greeting_count = INIT_COUNT;
+    constructor(fields: {name: string, greeting_count: number} | undefined = undefined) {
       if (fields) {
         this.name = fields.name;
+        this.greeting_count = fields.greeting_count;
       }
     }
     static schema = new Map([[GmAccount,
         {
             kind: 'struct',
             fields: [
-                ['name', 'string']]
+                ['name', 'string'],
+                ['greeting_count', 'u8']]
         }]]);
  }
  
@@ -80,7 +85,7 @@ import {
  */
  const GREETING_SIZE = borsh.serialize(
     GmAccount.schema,
-    new GmAccount({ name: NAME_FOR_GM }))
+    new GmAccount({ name: NAME_FOR_GM, greeting_count: INIT_COUNT }))
  .length;
  
  /**
@@ -204,24 +209,36 @@ import {
     //first we serialize the name data
  
     let gm = new GmAccount({
-        name: NAME_FOR_GM
+        name: NAME_FOR_GM,
+        greeting_count: INIT_COUNT
     })
  
  
     let data = borsh.serialize(GmAccount.schema, gm);
-    const data_to_send = Buffer.from(data);
-    console.log(data_to_send)
- 
-    const instruction = new TransactionInstruction({
-        keys: [{ pubkey: greetedPubkey, isSigner: false, isWritable: true }],
-        programId,
-        data: data_to_send
-    });
-    await sendAndConfirmTransaction(
-        connection,
-        new Transaction().add(instruction),
-        [payer],
-    );
+    let data_to_send = Buffer.from(data);
+
+    for (let i = 0; i < TIMES_TO_GREET; i++) {
+        console.log(data_to_send)
+    
+        let instruction = new TransactionInstruction({
+            keys: [{ pubkey: greetedPubkey, isSigner: false, isWritable: true }],
+            programId,
+            data: data_to_send
+        });
+        await sendAndConfirmTransaction(
+            connection,
+            new Transaction().add(instruction),
+            [payer],
+        );
+        
+        // Get new state then repeat
+        const accountInfo = await connection.getAccountInfo(greetedPubkey);
+        if (accountInfo === null) {
+            throw 'Error: cannot find the greeted account let alone trying to greet it again';
+        }
+        data_to_send = Buffer.from(accountInfo.data);
+    }
+
  }
  
  /**
@@ -241,6 +258,12 @@ import {
         greetedPubkey.toBase58(),
         'GM was said to ',
         greeting.name
+    );
+    console.log(
+        greetedPubkey.toBase58(),
+        'Greeted ',
+        greeting.greeting_count,
+        ' times'
     );
  }
  

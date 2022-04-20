@@ -49,6 +49,12 @@ To deploy your smart-contract/program (replace with path to compiled library as 
 solana program deploy dist/program/gm_program.so
 ```
 
+## Run
+To run client program:
+```
+npm run start
+```
+
 # Bootcamps docs
 For more information on the bootcamp: 
 - [setup guide](https://docs.google.com/document/d/e/2PACX-1vTf4o3Va9TrwsFpYDnTLB8LpIwK1MUh0WIBtajio-Jk78aWlIKF-87BfFdRG2HcfExIq3WIFut_IwdA/pub?_hsmi=2&_hsenc=p2ANqtz-8PahmymbTCyCxBlhjA4S8Sev1tfmKz6UGUOCWhuFz8egxRAvCZxQ-WM1DIdajYi5BN95NRCYT0zyk5WVl67OwYHDq4CbYWdsb7aAy6UgficX4PcZE)
